@@ -3,3 +3,42 @@
   margin: 0;
   box-sizing: border-box;
 }
+
+body {
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+}
+
+.app {
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  padding: 20px 30px;
+  background-color: #dfdfdf;
+}
+
+.app::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100px;
+  width: 100%;
+  background-color: #009688;
+}
+
+.wrapper {
+  position: relative;
+  background-color: #ffffff;
+  height: 100%;
+  border-radius: 4px;
+  box-shadow: 1px 1px 12px #b16b6b3a;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.main {
+  display: flex;
+  height: 100%;
+}

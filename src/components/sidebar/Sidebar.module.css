@@ -1,0 +1,50 @@
+.leftSide {
+  flex: 0 1 30%;
+  border-right: 1px solid #00000015;
+}
+
+.searchBlock {
+  padding: 10px;
+}
+
+.input {
+  height: 40px;
+  width: 100%;
+  border: 1px solid #97626256;
+  position: relative;
+}
+
+.input::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  width: 20px;
+  height: 20px;
+  background: url('../../assets/search.svg') no-repeat;
+  transform: translateY(-50%);
+}
+
+.input input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding-left: 40px;
+  font-size: 14px;
+}
+
+.chats {
+  display: flex;
+  height: calc(100% - 60px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-direction: column;
+}
+
+.chats::-webkit-scrollbar {
+  width: 3px;
+}
+
+.chats::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.288);
+}
