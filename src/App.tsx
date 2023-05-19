@@ -1,6 +1,6 @@
 import './App.css'
 import FullChat from './components/FullChat/FullChat'
-import Sidebar from './components/sidebar'
+import Sidebar from './components/sidebar/Sidebar'
 
 function App() {
 
