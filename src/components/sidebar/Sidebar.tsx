@@ -20,9 +20,12 @@ const Sidebar = () => {
 
   const handleSearch = async () => {
     if(searchValue) {
+      // оставляем только цифры с поиска
       const phoneNumber = searchValue.replace(/\D+/g, '')
+      // проверяем, существует ли аккаунт с таким номером
       const isExist = (await checkWhatsapp(phoneNumber))?.existsWhatsapp
       
+      // если да, то запрашиваем инфорацию о контакте
       if(isExist) {
         const contactInfo = (await getContactInfo(`${phoneNumber}@c.us`)) || null
 
@@ -81,8 +84,10 @@ const Sidebar = () => {
           </div>
           {searchValue && (
             <div className={styles.searchResults}>
-              {contactInfo && (
+              {contactInfo ? (
                 <div onClick={() => onMoveToChat(contactInfo.chatId)}><ChatItem name={contactInfo?.name}/></div>
+              ) : (
+                <span>Пользователь не найден</span>
               )}
             </div>
           )}

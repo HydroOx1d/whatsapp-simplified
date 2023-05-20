@@ -43,7 +43,7 @@ const FullChat = () => {
     return () => {
       clearTimeout(recieveNotificationWithInterval.current || undefined)
     }
-  }, [])
+  }, [chatId])
 
   React.useEffect(() => {
     if (chatId) {
