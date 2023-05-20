@@ -15,30 +15,39 @@ const FullChat = () => {
 
   const recieveNotificationWithInterval = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  React.useEffect(() => {
-    // Каждые две секунды отправляем запрос на сервер и получаем уведомления
-    recieveNotificationWithInterval.current = setTimeout(function tick() {
-      recieveNotification().then(notification => {
-        // если есть уведомления, то обрабатываем
-        if (notification) {
-          // смотрим, что уведомление о входящем сообщении и проверяем, совпадает ли id собеседника с id из уведомления
-          if (notification.body.typeWebhook === 'incomingMessageReceived' && notification.body.senderData.chatId === chatId) {
-            // получаем информацию о сообщении и рендерим
-            getMeesageInfo({ chatId, idMessage: notification.body.idMessage || '' }).then(message => {
-              if (message) {
+  function tick() {
+    recieveNotification().then(notification => {
+      // если есть уведомления, то обрабатываем
+      if (notification) {
+        console.log(notification.body.senderData.chatId, chatId)
+        // смотрим, что уведомление о входящем сообщении и проверяем, совпадает ли id собеседника с id из уведомления
+        if (notification.body.typeWebhook === 'incomingMessageReceived' && notification.body.senderData.chatId === chatId) {
+          // получаем информацию о сообщении и рендерим
+          getMeesageInfo({ chatId, idMessage: notification.body.idMessage || '' }).then(message => {
+            if (message) {
+              // Проверяем, существуе ли такое сообщение в состоянии
+              const messageIsExist = chatMessages.find((message) => message.idMessage === notification.body.idMessage)
+              // если нет, то добавляем
+              console.log(messageIsExist)
+              if(!messageIsExist) {
                 setChatMessages(prev => [...prev, message])
               }
-            })
-            
-          }
-          // очищаем уведомление
-          deleteNotification(notification.receiptId)
+            }
+          })
+          
         }
-  
-        recieveNotificationWithInterval.current = setTimeout(tick, 2000)
-      })
+        // очищаем уведомление
+        deleteNotification(notification.receiptId)
+      }
 
-    }, 2000)
+      recieveNotificationWithInterval.current = setTimeout(tick, 2000)
+    })
+    
+  }
+
+  React.useEffect(() => {
+    // Каждые две секунды отправляем запрос на сервер и получаем уведомления
+    recieveNotificationWithInterval.current = setTimeout(tick, 2000)
 
     return () => {
       clearTimeout(recieveNotificationWithInterval.current || undefined)
