@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { Contact } from "../../types";
+import { ContactType } from "../../types";
 import { getContacts } from "../../api";
 
 export const getContactsThunk = createAsyncThunk('chats/getContactsThunk', async (_, {dispatch}) => {
@@ -9,7 +9,7 @@ export const getContactsThunk = createAsyncThunk('chats/getContactsThunk', async
 })
 
 type InitialStateType = {
-  contacts: Array<Contact>
+  contacts: Array<ContactType>
 }
 
 const initialState: InitialStateType = {
@@ -20,7 +20,7 @@ const ChatsSlice = createSlice({
   name: 'chats',
   initialState,
   reducers: {
-    pushToContacts(state, action: PayloadAction<Array<Contact>>) {
+    pushToContacts(state, action: PayloadAction<Array<ContactType>>) {
       state.contacts = action.payload
     }
   }

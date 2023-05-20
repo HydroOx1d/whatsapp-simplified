@@ -11,7 +11,31 @@
 }
 
 .fullChatMain {
-  flex: 0 1 100%
+  flex: 0 1 100%;
+  padding: 20px;
+  height: 100%;
+  overflow: auto;
+}
+
+.fullChatMessage {
+  width: fit-content;
+  margin: 0px 0px 20px 0px;
+  border-radius: 10px;
+  padding: 10px;
+  max-width: 400px;
+}
+
+.fullChatMessage:last-child {
+  margin-bottom: 0;
+}
+
+.fullChatMessage.incoming {
+  background-color: #ffffff;
+}
+
+.fullChatMessage.outgoing {
+  background-color: #d9fdd3;
+  margin-left: auto;
 }
 
 .fullChatForm {
@@ -61,11 +85,13 @@
 .fullChatHeader {
   background-color: #eeeeee;
   padding: 10px;
+  min-height: 60px;
 }
 
 .fullChatUser {
   display: flex;
   align-items: center;
+  height: 100%;
 }
 
 .fullChatUserAvatar {
