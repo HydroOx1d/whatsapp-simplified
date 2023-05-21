@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { ContactType } from "../../types";
+import { AuthDataType, ContactType } from "../../types";
 import { getContacts } from "../../api";
 
-export const getContactsThunk = createAsyncThunk('chats/getContactsThunk', async (_, {dispatch}) => {
-  const data = await getContacts() || []
+export const getContactsThunk = createAsyncThunk('chats/getContactsThunk', async (authData: AuthDataType, {dispatch}) => {
+  const data = await getContacts(authData) || []
 
   dispatch(pushToContacts(data))
 })

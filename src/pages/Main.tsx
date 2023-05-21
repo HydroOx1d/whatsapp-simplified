@@ -2,7 +2,7 @@ import React from 'react'
 import Sidebar from '../components/sidebar/Sidebar'
 import { Outlet } from 'react-router-dom'
 
-const Main = () => {
+const MainPage = () => {
   return (
     <>
       <Sidebar/>
@@ -11,4 +11,4 @@ const Main = () => {
   )
 }
 
-export default Main
+export default MainPage

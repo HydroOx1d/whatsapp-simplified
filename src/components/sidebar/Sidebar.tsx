@@ -13,6 +13,8 @@ const Sidebar = () => {
   const searchValueRef = React.useRef<ReturnType<typeof setTimeout>>()
   const [contactInfo, setContactInfo] = React.useState<ContactInfoType | null>(null)
 
+  const {apiTokenInstance, instance} = useSelector((state: RootState) => state.auth)
+
   const contacts = useSelector((state: RootState) => state.chats.contacts.filter(contact => contact.type !== 'group'))
   const dispatch = useDispatch<AppDispatch>()
 
@@ -23,11 +25,11 @@ const Sidebar = () => {
       // оставляем только цифры с поиска
       const phoneNumber = searchValue.replace(/\D+/g, '')
       // проверяем, существует ли аккаунт с таким номером
-      const isExist = (await checkWhatsapp(phoneNumber))?.existsWhatsapp
+      const isExist = (await checkWhatsapp(phoneNumber, {apiTokenInstance, instance}))?.existsWhatsapp
       
       // если да, то запрашиваем инфорацию о контакте
       if(isExist) {
-        const contactInfo = (await getContactInfo(`${phoneNumber}@c.us`)) || null
+        const contactInfo = (await getContactInfo(`${phoneNumber}@c.us`, {apiTokenInstance, instance})) || null
 
         setContactInfo(contactInfo)
       } else {
@@ -41,7 +43,7 @@ const Sidebar = () => {
   }
 
   React.useEffect(() => {
-    dispatch(getContactsThunk())
+    dispatch(getContactsThunk({apiTokenInstance, instance}))
   }, [])
 
   React.useEffect(() => {
@@ -67,9 +69,19 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <div className={styles.chats}>
+      <div className={styles.chats} style={searchValue ? {overflow: 'hidden'} : {overflow: 'auto'}}>
         <div className={styles.contacts}>
-            <div className={styles.contactsTitle}>Контакты</div>
+            {searchValue && (
+              <div className={styles.searchResults}>
+                <div className={styles.chatsTitle}>Найденные чаты</div>
+                {contactInfo ? (
+                  <div onClick={() => onMoveToChat(contactInfo.chatId)}><ChatItem name={contactInfo?.name}/></div>
+                ) : (
+                  <span className={styles.chatsTitle} style={{fontSize: '16px'}}>Пользователь не найден</span>
+                )}
+              </div>
+            )}
+            <div className={styles.chatsTitle}>Контакты</div>
             <div className={styles.contactBlock}>
               {
                 contacts.map(contact => {
@@ -82,15 +94,6 @@ const Sidebar = () => {
               }
             </div>
           </div>
-          {searchValue && (
-            <div className={styles.searchResults}>
-              {contactInfo ? (
-                <div onClick={() => onMoveToChat(contactInfo.chatId)}><ChatItem name={contactInfo?.name}/></div>
-              ) : (
-                <span>Пользователь не найден</span>
-              )}
-            </div>
-          )}
       </div>
     </div>
   )

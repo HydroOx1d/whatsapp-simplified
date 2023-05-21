@@ -60,3 +60,12 @@ export type NotificationType = {
     },
   },
 }
+
+export type InstanceStateType = {
+  stateInstance: 'notAuthorized' | 'authorized' | 'blocked' | 'sleepMode' | 'starting'
+}
+
+export type AuthDataType = {
+  instance: string,
+  apiTokenInstance: string
+}

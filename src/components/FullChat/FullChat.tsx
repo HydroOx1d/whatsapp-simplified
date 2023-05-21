@@ -1,33 +1,37 @@
 import styles from './FullChat.module.css'
 import send from '../../assets/send.svg'
-import { useParams } from 'react-router-dom'
-import { deleteNotification, getChatHstory, getContactInfo, getMeesageInfo, recieveNotification, sendMessage } from '../../api'
+import { useNavigate, useParams } from 'react-router-dom'
+import { deleteNotification, getChatHstory, getContactInfo, getMeesageInfo, getStateInstance, recieveNotification, sendMessage } from '../../api'
 import React from 'react'
 import { ChatMessageType, ContactInfoType, SendMessageDataType } from '../../types'
+import { RootState } from '../../store'
+import { useSelector } from 'react-redux'
 
 const FullChat = () => {
+  const {apiTokenInstance, instance} = useSelector((state: RootState) => state.auth)
   const params = useParams<{ chatId: string }>()
   const [chatMessages, setChatMessages] = React.useState<Array<ChatMessageType>>([])
   const [contactInfo, setContactInfo] = React.useState<ContactInfoType | null>(null)
   const [textAreaValue, setTextAreaValue] = React.useState('')
   const fullChatMainRef = React.useRef<HTMLDivElement | null>(null)
+  const navigate = useNavigate()
   const chatId = params.chatId + '@c.us'
 
   const recieveNotificationWithInterval = async (signal: AbortSignal) => {
-    const notification = await recieveNotification()
+    const notification = await recieveNotification({apiTokenInstance, instance}, signal)
 
     if (notification) {
       // смотрим, что уведомление о входящем сообщении и проверяем, совпадает ли id собеседника с id из уведомления
       if (notification.body.typeWebhook === 'incomingMessageReceived' && notification.body.senderData.chatId === chatId) {
         // получаем информацию о сообщении и рендерим
-        getMeesageInfo({ chatId, idMessage: notification.body.idMessage || '' }).then(message => {
+        getMeesageInfo({ chatId, idMessage: notification.body.idMessage || '' }, {apiTokenInstance, instance}).then(message => {
           if (message) {
             setChatMessages(prev => [...prev, message])
           }
         })
       }
       // очищаем уведомление
-      deleteNotification(notification.receiptId)
+      deleteNotification(notification.receiptId, {apiTokenInstance, instance})
     }
 
     // Через 2 секунды повторяем выше изложенное
@@ -54,9 +58,9 @@ const FullChat = () => {
   React.useEffect(() => {
     if (chatId) {
       // получаем историю чата
-      getChatHstory(chatId).then(data => setChatMessages(data?.reverse() || []))
+      getChatHstory(chatId, {apiTokenInstance, instance}).then(data => setChatMessages(data?.reverse() || []))
       // получаем информацию о собеседнике
-      getContactInfo(chatId).then(data => setContactInfo(data || null))
+      getContactInfo(chatId, {apiTokenInstance, instance}).then(data => setContactInfo(data || null))
     }
   }, [chatId])
 
@@ -76,15 +80,20 @@ const FullChat = () => {
       chatId,
       message: textAreaValue
     }
+    const stateInstance = await getStateInstance({apiTokenInstance, instance})
 
-    const idMessage = await sendMessage(messageData)
+    if(stateInstance.stateInstance === 'notAuthorized') {
+      navigate('/login')
+    }
+
+    const idMessage = await sendMessage(messageData, {apiTokenInstance, instance})
 
     // через секунду получаем информацию об отправленном сообщении и рендерим его
     setTimeout(() => {
       getMeesageInfo({
         chatId,
         idMessage: idMessage?.idMessage || ''
-      }).then(data => {
+      }, {apiTokenInstance, instance}).then(data => {
         if (data) {
           setChatMessages(prev => [...prev, data])
         }
