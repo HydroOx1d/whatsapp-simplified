@@ -6,53 +6,50 @@ import React from 'react'
 import { ChatMessageType, ContactInfoType, SendMessageDataType } from '../../types'
 
 const FullChat = () => {
+  const params = useParams<{ chatId: string }>()
   const [chatMessages, setChatMessages] = React.useState<Array<ChatMessageType>>([])
   const [contactInfo, setContactInfo] = React.useState<ContactInfoType | null>(null)
   const [textAreaValue, setTextAreaValue] = React.useState('')
   const fullChatMainRef = React.useRef<HTMLDivElement | null>(null)
-  const params = useParams<{ chatId: string }>()
   const chatId = params.chatId + '@c.us'
 
-  const recieveNotificationWithInterval = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+  const recieveNotificationWithInterval = async (signal: AbortSignal) => {
+    const notification = await recieveNotification()
 
-  function tick() {
-    recieveNotification().then(notification => {
-      // если есть уведомления, то обрабатываем
-      if (notification) {
-        console.log(notification.body.senderData.chatId, chatId)
-        // смотрим, что уведомление о входящем сообщении и проверяем, совпадает ли id собеседника с id из уведомления
-        if (notification.body.typeWebhook === 'incomingMessageReceived' && notification.body.senderData.chatId === chatId) {
-          // получаем информацию о сообщении и рендерим
-          getMeesageInfo({ chatId, idMessage: notification.body.idMessage || '' }).then(message => {
-            if (message) {
-              // Проверяем, существуе ли такое сообщение в состоянии
-              const messageIsExist = chatMessages.find((message) => message.idMessage === notification.body.idMessage)
-              // если нет, то добавляем
-              console.log(messageIsExist)
-              if(!messageIsExist) {
-                setChatMessages(prev => [...prev, message])
-              }
-            }
-          })
-          
-        }
-        // очищаем уведомление
-        deleteNotification(notification.receiptId)
+    if (notification) {
+      // смотрим, что уведомление о входящем сообщении и проверяем, совпадает ли id собеседника с id из уведомления
+      if (notification.body.typeWebhook === 'incomingMessageReceived' && notification.body.senderData.chatId === chatId) {
+        // получаем информацию о сообщении и рендерим
+        getMeesageInfo({ chatId, idMessage: notification.body.idMessage || '' }).then(message => {
+          if (message) {
+            setChatMessages(prev => [...prev, message])
+          }
+        })
       }
+      // очищаем уведомление
+      deleteNotification(notification.receiptId)
+    }
 
-      recieveNotificationWithInterval.current = setTimeout(tick, 2000)
-    })
+    // Через 2 секунды повторяем выше изложенное
+    await new Promise(res => setTimeout(res, 2000))
     
+    //если произошла отписка от функции, прекращаем рекурсию
+    if(!signal.aborted) {
+      await recieveNotificationWithInterval(signal)
+    }
   }
 
   React.useEffect(() => {
-    // Каждые две секунды отправляем запрос на сервер и получаем уведомления
-    recieveNotificationWithInterval.current = setTimeout(tick, 2000)
+    const abort = new AbortController()
+    const { signal } = abort
+    // отправляем частые запросы на сервер на наличие уведомлений
+    recieveNotificationWithInterval(signal)
 
     return () => {
-      clearTimeout(recieveNotificationWithInterval.current || undefined)
+      // при размонтировании отписываемся от рекурсивной функции
+      abort.abort()
     }
-  }, [chatId])
+  }, [params.chatId])
 
   React.useEffect(() => {
     if (chatId) {
